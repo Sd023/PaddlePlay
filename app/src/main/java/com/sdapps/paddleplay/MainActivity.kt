@@ -12,9 +12,6 @@ class MainActivity : AppCompatActivity(), BallView.OnGameOverListener {
     private var handler: Handler = Handler()
     private lateinit var runnable: Runnable
 
-    private var count = 0
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -71,6 +68,7 @@ class MainActivity : AppCompatActivity(), BallView.OnGameOverListener {
                 dialog.dismiss()
             }
             .setNegativeButton(R.string.quit) { dialog, _ ->
+                finish()
                 dialog.dismiss()
             }
             .show()
