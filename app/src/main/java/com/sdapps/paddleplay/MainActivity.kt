@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.sdapps.paddleplay.databinding.ActivityMainBinding
 import com.sdapps.paddleplay.PaddleView.Companion.PADDLE_WIDTH
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity(), BallView.OnGameOverListener {
     private lateinit var binding: ActivityMainBinding
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity(), BallView.OnGameOverListener {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(runnable)
+
     }
 
     override fun gameOver() {
@@ -75,7 +77,7 @@ class MainActivity : AppCompatActivity(), BallView.OnGameOverListener {
                 dialog.dismiss()
             }
             .setNegativeButton(R.string.quit) { dialog, _ ->
-                finish()
+                restartGame()
                 dialog.dismiss()
             }
             .show()

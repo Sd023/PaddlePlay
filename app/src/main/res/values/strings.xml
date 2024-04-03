@@ -3,6 +3,6 @@
     <string name="game_over">Game Over</string>
     <string name="high_score">High Score</string>
     <string name="do_you_want_to_restart">Do you want to restart the game?</string>
-    <string name="quit">Quit</string>
+    <string name="quit">Cancel</string>
     <string name="restart">Restart</string>
 </resources>
