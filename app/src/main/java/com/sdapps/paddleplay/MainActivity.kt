@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity(), BallView.OnGameOverListener {
         AlertDialog.Builder(this)
             .setTitle(R.string.game_over)
             .setMessage("${getString(R.string.high_score)} is ${binding.ball.paddleHitCount}. ${getString(R.string.do_you_want_to_restart)}")
+            .setCancelable(false)
             .setPositiveButton(R.string.restart) { dialog, _ ->
                 //count = 0
                 //binding.counter.text = count.toString()
