@@ -16,6 +16,12 @@ class MainActivity : AppCompatActivity(), BallView.OnGameOverListener {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.apply {
+            decorView.systemUiVisibility = (
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+            statusBarColor = android.graphics.Color.TRANSPARENT
+        }
         binding.ball.setUpGameOver(this)
         init()
     }

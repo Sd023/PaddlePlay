@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="ball_color">#eb1719</color>
+    <color name="paddle_color">#1c4571</color>
 </resources>

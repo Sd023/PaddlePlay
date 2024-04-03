@@ -2,14 +2,17 @@ package com.sdapps.paddleplay
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
+import android.media.MediaPlayer
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.AttributeSet
 import android.view.View
 
 class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private val ballColor = Paint().apply {
-        color = Color.BLACK
+        color = context.getColor(R.color.ball_color)
     }
 
     /*   X and Y axis of Ball */
@@ -27,6 +30,8 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     private var coolDownTimer :Long = 0
     var paddleHitCount : Int = 0
+
+    private var mediaPlayer: MediaPlayer? = null
 
     interface OnGameOverListener{
         fun gameOver()
@@ -74,12 +79,23 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         val currentTime = System.currentTimeMillis()
         val timeSinceLastCollision = currentTime - coolDownTimer
 
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
+
         if (timeSinceLastCollision < PADDLE_COLLISION_COOLDOWN) {
             return false
         }
         val collidesWithPaddle = ballY + ballRadius >= height - paddleHeight && ballX >= paddleX && ballX <= paddleX + paddleWidth
 
         if (collidesWithPaddle) {
+            playSound()
+            if(vibrator.hasVibrator()){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(50, 1))
+                } else {
+                    vibrator.vibrate(50)
+                }
+            }
             coolDownTimer = currentTime
             paddleHitCount++
             if(paddleHitCount > BALL_SPEED_INCREASE_STEP){
@@ -102,9 +118,22 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
+    private fun playSound(){
+        mediaPlayer = MediaPlayer.create(context, R.raw.ball_collide)
+        mediaPlayer?.let {
+            it.playbackParams = it.playbackParams.setSpeed(1.5f)
+            it.start()
+        }
+        mediaPlayer?.setVolume(0.5f, 0.5f)
+
+    }
+
+
     fun stopGame() {
         velocityY = 0f
         velocityX = 0f
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 
     fun restartGame(){

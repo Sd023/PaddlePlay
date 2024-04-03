@@ -13,7 +13,7 @@ class PaddleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
 
     private val paddlePaint = Paint().apply {
-        color = Color.WHITE
+        color = context.getColor(R.color.paddle_color)
     }
     private var paddleRect = RectF()
 
