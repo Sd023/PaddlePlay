@@ -58,8 +58,8 @@ class PaddleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     }
 
     companion object {
-        const val PADDLE_WIDTH = 400
-        const val PADDLE_HEIGHT = 60
+        const val PADDLE_WIDTH = 250
+        const val PADDLE_HEIGHT =60
         const val PADDLE_BOTTOM_MARGIN = 20
         const val PADDLE_CORNER_RADIUS = 15f
     }

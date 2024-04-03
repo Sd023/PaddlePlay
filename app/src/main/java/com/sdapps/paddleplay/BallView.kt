@@ -22,8 +22,8 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
 
     /*    Speed of the ball  */
-    private var velocityX: Float = 5f
-    private var velocityY: Float = 5f
+    private var velocityX: Float
+    private var velocityY: Float
     var isGameOver: Boolean = false
 
     private var listenerGame : OnGameOverListener? = null
@@ -49,8 +49,8 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         ballX = context.resources.displayMetrics.widthPixels / 2f
         ballY = context.resources.displayMetrics.heightPixels / 2f
 
-        velocityX = 10f
-        velocityY = 10f
+        velocityX = 20f
+        velocityY = 20f
     }
 
 
@@ -98,9 +98,8 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             }
             coolDownTimer = currentTime
             paddleHitCount++
-            if(paddleHitCount > BALL_SPEED_INCREASE_STEP){
-                increaseSpeed()
-            }
+
+            increaseSpeed()
             return true
         }
         return false
@@ -115,17 +114,22 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private fun checkCollisionWithTop() {
         if (ballY - ballRadius <= 0) {
             velocityY = -velocityY
+            ballY = ballRadius + 1
         }
     }
 
     private fun playSound(){
-        mediaPlayer = MediaPlayer.create(context, R.raw.ball_collide)
+        if (mediaPlayer == null) {
+            mediaPlayer = MediaPlayer.create(context, R.raw.ball_collide)
+            mediaPlayer?.setVolume(0.5f, 0.5f)
+        } else {
+            mediaPlayer?.seekTo(0)
+        }
+
         mediaPlayer?.let {
             it.playbackParams = it.playbackParams.setSpeed(1.5f)
             it.start()
         }
-        mediaPlayer?.setVolume(0.5f, 0.5f)
-
     }
 
 
@@ -138,17 +142,29 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     fun restartGame(){
         paddleHitCount = 0
-        velocityX = 10f
-        velocityY = 10f
+        velocityX = 20f
+        velocityY = 20f
     }
 
-    private fun increaseSpeed(){
-        if((velocityX < 20f) && (velocityY < 20f)){
-            velocityY += 2f
-            velocityX += 2f
+    private fun increaseSpeed() {
+        val speedMap = mapOf(
+            3 to 25f,
+            5 to 32f,
+            10 to 42f,
+            15 to 48f,
+            20 to 55f,
+            22 to 62f
+        )
+
+        val maxHitCount = speedMap.keys.filter { it <= paddleHitCount }.maxOrNull()
+
+        if (maxHitCount != null) {
+            val velocity = speedMap[maxHitCount]
+            velocityX = velocity!!
+            velocityY = velocity
         }
-
     }
+
 
     fun resetBall() {
         ballX = context.resources.displayMetrics.widthPixels / 2f
