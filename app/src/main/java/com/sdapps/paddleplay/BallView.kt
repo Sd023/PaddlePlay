@@ -49,8 +49,8 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         ballX = context.resources.displayMetrics.widthPixels / 2f
         ballY = context.resources.displayMetrics.heightPixels / 2f
 
-        velocityX = 20f
-        velocityY = 20f
+        velocityX = 10f
+        velocityY = 10f
     }
 
 
@@ -142,8 +142,8 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     fun restartGame(){
         paddleHitCount = 0
-        velocityX = 20f
-        velocityY = 20f
+        velocityX = 10f
+        velocityY = 10f
     }
 
     private fun increaseSpeed() {
