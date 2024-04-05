@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="ball_color">#eb1719</color>
     <color name="paddle_color">#1c4571</color>
+    <color name="black_bg">#252525</color>
 </resources>
