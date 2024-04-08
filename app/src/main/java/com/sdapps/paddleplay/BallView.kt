@@ -11,139 +11,111 @@ import android.util.AttributeSet
 import android.view.View
 
 class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
-    private val ballColor = Paint().apply {
-        color = context.getColor(R.color.ball_color)
+    private val ballColor: Paint = Paint().apply {
+        color = context.getColor(R.color.black)
     }
 
-    /*   X and Y axis of Ball */
-    private var ballY: Float = 0f
     private var ballX: Float = 0f
-    private var ballRadius: Float = 48f
+    private var ballY: Float = 0f
+    private val ballRadius: Float = 48f
 
+    private var velocityX: Float = 10f
+    private var velocityY: Float = 10f
 
-    /*    Speed of the ball  */
-    private var velocityX: Float
-    private var velocityY: Float
     var isGameOver: Boolean = false
-
-    private var listenerGame : OnGameOverListener? = null
-
-    private var coolDownTimer :Long = 0
-    var paddleHitCount : Int = 0
-
+    private var listenerGame: OnGameOverListener? = null
+    private var coolDownTimer: Long = 0
+     var paddleHitCount: Int = 0
     private var mediaPlayer: MediaPlayer? = null
 
-    interface OnGameOverListener{
+    interface OnGameOverListener {
         fun gameOver()
     }
 
-    fun setUpGameOver(listener: OnGameOverListener){
-        listenerGame = listener
+    init {
+        ballX = context.resources.displayMetrics.widthPixels / 2f
+        ballY = context.resources.displayMetrics.heightPixels / 2f
     }
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawCircle(ballX, ballY, ballRadius, ballColor)
     }
 
-    init {
-        ballX = context.resources.displayMetrics.widthPixels / 2f
-        ballY = context.resources.displayMetrics.heightPixels / 2f
-
-        velocityX = 10f
-        velocityY = 10f
-    }
-
-
     fun moveBallWithPaddle(paddleX: Float, paddleWidth: Int) {
         ballX += velocityX
         ballY += velocityY
 
-        //checking if ball hits any edge of the screen.
         if (ballX - ballRadius <= 0 || ballX + ballRadius >= width) {
             velocityX = -velocityX
         }
 
-        /*checking if ball drops below the paddle*/
         if (ballY + ballRadius >= height) {
-            isGameOver = true
-            listenerGame?.gameOver()
+            gameOver()
             resetBall()
+            return
         }
+
         handlePaddleCollision(paddleX, paddleWidth)
         checkCollisionWithTop()
         invalidate()
     }
 
+    private fun handlePaddleCollision(paddleX: Float, paddleWidth: Int) {
+        if (checkCollisionWithPaddle(paddleX, paddleWidth)) {
+            velocityY = -velocityY
+        }
+    }
 
-    fun checkCollisionWithPaddle(paddleX: Float, paddleWidth: Int, paddleHeight: Int): Boolean {
+    private fun checkCollisionWithPaddle(paddleX: Float, paddleWidth: Int): Boolean {
         val currentTime = System.currentTimeMillis()
         val timeSinceLastCollision = currentTime - coolDownTimer
-
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-
 
         if (timeSinceLastCollision < PADDLE_COLLISION_COOLDOWN) {
             return false
         }
-        val collidesWithPaddle = ballY + ballRadius >= height - paddleHeight && ballX >= paddleX && ballX <= paddleX + paddleWidth
+        //purpose of 50 is to add additional height to paddle. So ball wont move through paddle. It hits and bounces back
+        val collidesWithPaddle = ballY + ballRadius >= height - (PaddleView.PADDLE_HEIGHT + 50) &&
+                ballX >= paddleX && ballX <= paddleX + paddleWidth
 
         if (collidesWithPaddle) {
-            playSound()
-            if(vibrator.hasVibrator()){
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(50, 1))
-                } else {
-                    vibrator.vibrate(50)
-                }
-            }
+            onPaddleCollision()
             coolDownTimer = currentTime
             paddleHitCount++
-
-            increaseSpeed()
             return true
         }
         return false
     }
 
-    private fun handlePaddleCollision(paddleX: Float, paddleWidth: Int) {
-        if (checkCollisionWithPaddle(paddleX, paddleWidth, PaddleView.PADDLE_HEIGHT)) {
-            velocityY = -velocityY
-        }
+    private fun onPaddleCollision() {
+        playSound()
+        vibrate()
+        increaseSpeed()
     }
 
-    private fun checkCollisionWithTop() {
-        if (ballY - ballRadius <= 0) {
-            velocityY = -velocityY
-            ballY = ballRadius + 1
-        }
-    }
-
-    private fun playSound(){
+    private fun playSound() {
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(context, R.raw.ball_collide)
             mediaPlayer?.setVolume(0.5f, 0.5f)
         } else {
             mediaPlayer?.seekTo(0)
         }
-
         mediaPlayer?.let {
             it.playbackParams = it.playbackParams.setSpeed(1.5f)
             it.start()
         }
     }
 
-
-    fun stopGame() {
-        velocityY = 0f
-        velocityX = 0f
-        mediaPlayer?.release()
-        mediaPlayer = null
-    }
-
-    fun restartGame(){
-        paddleHitCount = 0
-        velocityX = 10f
-        velocityY = 10f
+    private fun vibrate() {
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        vibrator?.let {
+            if (it.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    it.vibrate(VibrationEffect.createOneShot(50, 1))
+                } else {
+                    it.vibrate(50)
+                }
+            }
+        }
     }
 
     private fun increaseSpeed() {
@@ -155,16 +127,40 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             20 to 55f,
             22 to 62f
         )
-
         val maxHitCount = speedMap.keys.filter { it <= paddleHitCount }.maxOrNull()
-
-        if (maxHitCount != null) {
-            val velocity = speedMap[maxHitCount]
-            velocityX = velocity!!
-            velocityY = velocity
+        maxHitCount?.let { count ->
+            val velocity = speedMap[count]
+            velocity?.let { speed ->
+                velocityX = speed
+                velocityY = speed
+            }
         }
     }
 
+    private fun checkCollisionWithTop() {
+        if (ballY - ballRadius <= 0) {
+            velocityY = -velocityY
+            ballY = ballRadius + 1
+        }
+    }
+
+    fun stopGame() {
+        velocityY = 0f
+        velocityX = 0f
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
+    fun restartGame() {
+        paddleHitCount = 0
+        velocityX = 10f
+        velocityY = 10f
+    }
+
+    private fun gameOver() {
+        isGameOver = true
+        listenerGame?.gameOver()
+    }
 
     fun resetBall() {
         ballX = context.resources.displayMetrics.widthPixels / 2f
@@ -172,9 +168,11 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         invalidate()
     }
 
+    fun setUpGameOver(listener: OnGameOverListener) {
+        listenerGame = listener
+    }
+
     companion object {
         private const val PADDLE_COLLISION_COOLDOWN = 500L
-        private const val BALL_SPEED_INCREASE_STEP = 5
-
     }
 }

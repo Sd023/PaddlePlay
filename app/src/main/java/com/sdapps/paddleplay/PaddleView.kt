@@ -2,7 +2,6 @@ package com.sdapps.paddleplay
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
@@ -11,9 +10,8 @@ import android.view.View
 
 class PaddleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
-
     private val paddlePaint = Paint().apply {
-        color = context.getColor(R.color.paddle_color)
+        color = context.getColor(R.color.black)
     }
     private var paddleRect = RectF()
 
@@ -32,11 +30,12 @@ class PaddleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         )
 
         canvas.drawRoundRect(paddleRect, PADDLE_CORNER_RADIUS, PADDLE_CORNER_RADIUS, paddlePaint)
-
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        when (event?.action) {
+        event ?: return super.onTouchEvent(event)
+
+        when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 initialStartXAxis = event.x
                 return true
@@ -44,7 +43,7 @@ class PaddleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
             MotionEvent.ACTION_MOVE -> {
                 val newXPosition = paddleXAxis + (event.x - initialStartXAxis)
-                paddleXAxis= newXPosition.coerceIn(0f,width.toFloat() - PADDLE_WIDTH)
+                paddleXAxis = newXPosition.coerceIn(0f, width.toFloat() - PADDLE_WIDTH)
                 initialStartXAxis = event.x
                 invalidate()
                 return true
@@ -54,14 +53,14 @@ class PaddleView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     }
 
     fun setPaddlePosition(x: Float) {
-        paddleXAxis = x
+        paddleXAxis = x.coerceIn(0f, width.toFloat() - PADDLE_WIDTH)
+        invalidate()
     }
 
     companion object {
         const val PADDLE_WIDTH = 250
-        const val PADDLE_HEIGHT =60
-        const val PADDLE_BOTTOM_MARGIN = 20
+        const val PADDLE_HEIGHT = 70
+        const val PADDLE_BOTTOM_MARGIN = 100
         const val PADDLE_CORNER_RADIUS = 15f
     }
-
 }
