@@ -9,6 +9,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.AttributeSet
 import android.view.View
+import kotlin.math.sqrt
 
 class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private val ballColor: Paint = Paint().apply {
@@ -119,21 +120,18 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     }
 
     private fun increaseSpeed() {
-        val speedMap = mapOf(
-            3 to 25f,
-            5 to 32f,
-            10 to 42f,
-            15 to 48f,
-            20 to 55f,
-            22 to 62f
-        )
-        val maxHitCount = speedMap.keys.filter { it <= paddleHitCount }.maxOrNull()
-        maxHitCount?.let { count ->
-            val velocity = speedMap[count]
-            velocity?.let { speed ->
-                velocityX = speed
-                velocityY = speed
-            }
+        val newSpeedX = velocityX + BALL_SPEED_INCREMENT
+        val newSpeedY = velocityY + BALL_SPEED_INCREMENT
+
+        velocityX = if (newSpeedX > MAX_BALL_SPEED) MAX_BALL_SPEED else newSpeedX
+        velocityY = if (newSpeedY > MAX_BALL_SPEED) MAX_BALL_SPEED else newSpeedY
+
+
+        val speed = sqrt((velocityX * velocityX + velocityY * velocityY).toDouble())
+        if (speed > MAX_BALL_SPEED) {
+            val factor = MAX_BALL_SPEED / speed
+            velocityX *= factor.toFloat()
+            velocityY *= factor.toFloat()
         }
     }
 
@@ -174,5 +172,7 @@ class BallView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     companion object {
         private const val PADDLE_COLLISION_COOLDOWN = 500L
+        private const val BALL_SPEED_INCREMENT = 10
+        private const val MAX_BALL_SPEED = 50f
     }
 }
